@@ -1,14 +1,15 @@
-import sys
 import os.path
-import time
 import struct
+import sys
+import time
 from binascii import hexlify
+
 #from serial import Serial
 from serial_ import Serial
+
 #import serial
 
 DEVICE = sys.argv[1]
-
 CMD_GET_VERSION      = b"\xff" # this returns echo if security is off
 CMD_GET_BL_VER       = b"\xfe"
 CMD_GET_HW_VER       = b"\xfc"
@@ -29,14 +30,16 @@ CMD_PWR_WRITE16      = b"\xc7"
 def hexs(s):
     return hexlify(s).decode("ascii")
 
+
 while True:
     try:
-#        s = Serial(DEVICE, 19200)
+        #        s = Serial(DEVICE, 19200)
         s = Serial(DEVICE, 115200)
         sys.stdout.write("\n")
         break
     except OSError as e:
-        sys.stdout.write("."); sys.stdout.flush()
+        sys.stdout.write(".")
+        sys.stdout.flush()
         time.sleep(0.1)
 
 
@@ -69,6 +72,7 @@ def cmd_echo(cmd, resp_sz):
     print("<", hexs(resp))
     return resp
 
+
 def cmd_noecho(cmd, resp_sz, show=True):
     if show:
         print(">", hexs(cmd))
@@ -79,6 +83,7 @@ def cmd_noecho(cmd, resp_sz, show=True):
     print("<", hexs(resp))
     return resp
 
+
 def write32(addr, cnt, vals):
     resp = cmd_echo(CMD_WRITE32 + struct.pack(">II", addr, cnt), 2)
     assert resp == b"\0\0"
@@ -87,6 +92,7 @@ def write32(addr, cnt, vals):
     resp = cmd_echo(b"", 2)
     assert resp == b"\0\0"
 
+
 def get_da_part1_params():
     # addr, size, size_of_xxx?
     params = (0x00200000, 0x00011518, 0x00000100)
@@ -94,6 +100,7 @@ def get_da_part1_params():
         f.seek(0x3b5310)
         data = f.read(params[1])
     return (params, data)
+
 
 def get_da_part2_params():
     # addr, size, block_size
@@ -113,7 +120,8 @@ def boot_da2():
 
     resp = cmd_echo(CMD_GET_HW_VER, 8)
     subver, ver, extra = struct.unpack(">HHI", resp)
-    print("Hardware version: %#x, subversion: %#x, extra: %#x" % (ver, subver, extra))
+    print("Hardware version: %#x, subversion: %#x, extra: %#x" %
+          (ver, subver, extra))
 
     write32(0x10007000, 1, [0x22000064])
 
@@ -143,19 +151,19 @@ def boot_da2():
     resp = cmd_noecho(b"Z", 3)
     assert resp == b"\x04\x02\x94"
 
-    resp = cmd_noecho(\
-    b"\xff"
-    b"\x01"
-    b"\x00\x08"
-    b"\x00"
-    b"\x70\x07\xff\xff"
-    b"\x01"
-    b"\x00\x00\x00\x00"
-    b"\x02"
-    b"\x00"
-    b"\x02"
-    b"\x00"
-    b"\x00\x02\x00\x00", 4)
+    resp = cmd_noecho(
+        b"\xff"
+        b"\x01"
+        b"\x00\x08"
+        b"\x00"
+        b"\x70\x07\xff\xff"
+        b"\x01"
+        b"\x00\x00\x00\x00"
+        b"\x02"
+        b"\x00"
+        b"\x02"
+        b"\x00"
+        b"\x00\x02\x00\x00", 4)
 
     assert resp == b"\0\0\0\0"
 
@@ -213,7 +221,8 @@ def read_flash(start, size, outf):
         assert chksum_my & 0xffff == chksum
         #print(hex(ck_my), hexs(chksum), chunk)
         outf.write(chunk)
-        sys.stdout.write("."); sys.stdout.flush()
+        sys.stdout.write(".")
+        sys.stdout.flush()
         s.write(b"Z")
     print()
 
@@ -225,7 +234,7 @@ print("Reading flash...")
 f = open("rom.bin", "wb")
 
 start = 0
-size = 4096 #1024 * 1024 * 1024
+size = 4096  # 1024 * 1024 * 1024
 read_flash(start, size, f)
 
 f.close()

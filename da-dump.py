@@ -4,8 +4,8 @@
 # download agent (DA) binary. A typical name of such binary is
 # MTK_AllInOne_DA.bin, though names can be used too.
 #
-import sys
 import struct
+import sys
 
 
 def decode(f, sz, fmt):
@@ -53,4 +53,5 @@ for i in range(num_socs):
 
     print("  # file_offset, size, load_addr")
     for i, no in enumerate(PARTS):
-        print("  da_part%d: [%#x, 0x%05x, 0x%08x]  # %#x-%#x" % (i, fields[no], fields[no + 1], fields[no + 2], fields[no], fields[no] + fields[no + 1]))
+        print("  da_part%d: [%#x, 0x%05x, 0x%08x]  # %#x-%#x" % (i, fields[no],
+                                                                 fields[no + 1], fields[no + 2], fields[no], fields[no] + fields[no + 1]))
